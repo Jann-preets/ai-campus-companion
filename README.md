@@ -1,6 +1,10 @@
 # AI Campus Companion
 
 AI Campus Companion is a full-stack college portal designed to help students organize their academic activities in one place. Built using the MERN stack, it combines a modern, responsive interface with authentication, timetable management, notes, and an AI-powered study assistant.
+Live Demo: https://ai-campus-companion-bay.vercel.app/
+
+Source Code: https://github.com/Jann-preets/ai-campus-companion
+
 
 ## Features
 
