@@ -4,6 +4,7 @@ import { Send, Bot, User, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import axios from 'axios';
+import API_BASE_URL from "../api";
 
 const AITutorPage = () => {
     const [messages, setMessages] = useState([
@@ -37,7 +38,7 @@ const AITutorPage = () => {
             };
 
             // Send conversation history + new message
-            const { data } = await axios.post('http://localhost:5000/api/ai/chat', {
+            const { data } = await axios.post(`${API_BASE_URL}/api/notes`, {
                 messages: messages.map(m => ({ sender: m.sender, text: m.text })),
                 message: userMsg.text
             }, config);

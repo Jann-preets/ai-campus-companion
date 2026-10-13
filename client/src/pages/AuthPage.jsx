@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Mail, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from "../api";
 
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -22,7 +23,7 @@ const AuthPage = () => {
         e.preventDefault();
         try {
             const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-            const { data } = await axios.post(`http://localhost:5000${endpoint}`, formData);
+            const { data } = await axios.post(`${API_BASE_URL}${endpoint}`, formData);
             localStorage.setItem('userInfo', JSON.stringify(data));
             navigate('/dashboard');
         } catch (err) {

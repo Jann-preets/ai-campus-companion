@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, Button } from '../components/ui';
 import { FileText, Download, Trash, Plus } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from "../api";
 
 const NotesPage = () => {
     const [notes, setNotes] = useState([]);
@@ -32,7 +33,7 @@ const NotesPage = () => {
             }
 
             const response = await axios.get(
-                'http://localhost:5000/api/notes',
+                `${API_BASE_URL}/api/notes`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -69,7 +70,7 @@ const NotesPage = () => {
             }
 
             const response = await axios.post(
-                'http://localhost:5000/api/notes',
+                `${API_BASE_URL}/api/notes`,
                 {
                     title: modal.title.trim(),
                     subject: modal.subject.trim()
@@ -101,7 +102,7 @@ const NotesPage = () => {
             }
 
             await axios.delete(
-                `http://localhost:5000/api/notes/${id}`,
+                `${API_BASE_URL}/api/notes/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

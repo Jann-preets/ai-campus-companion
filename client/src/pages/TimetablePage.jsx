@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Button } from '../components/ui';
 import { Calendar, Plus, Trash, Clock, MapPin } from 'lucide-react';
+import API_BASE_URL from "../api";
 
 const TimetablePage = () => {
     const [classes, setClasses] = useState([]);
@@ -37,7 +38,7 @@ const TimetablePage = () => {
             }
 
             const response = await axios.get(
-                'http://localhost:5000/api/timetable',
+                `${API_BASE_URL}/api/timetable`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -87,7 +88,7 @@ const TimetablePage = () => {
             }
 
             const response = await axios.post(
-                'http://localhost:5000/api/timetable',
+                `${API_BASE_URL}/api/timetable`,
                 newClass,
                 {
                     headers: {
@@ -142,7 +143,7 @@ const TimetablePage = () => {
             }
 
             await axios.delete(
-                `http://localhost:5000/api/timetable/${id}`,
+                `${API_BASE_URL}/api/timetable/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

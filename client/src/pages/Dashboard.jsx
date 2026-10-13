@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Book, MessageSquare, User, LogOut, Clock, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import API_BASE_URL from "../api";
 const Dashboard = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
@@ -29,7 +29,7 @@ const Dashboard = () => {
                         Authorization: `Bearer ${userInfo.token}`,
                     },
                 };
-                const { data } = await axios.get('http://localhost:5000/api/dashboard', config);
+                const { data } = await axios.get(`${API_BASE_URL}/api/dashboard`, config);
                 setDashboardData(data);
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
