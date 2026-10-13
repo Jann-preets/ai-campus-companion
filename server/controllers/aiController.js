@@ -1,60 +1,95 @@
-const OpenAI = require('openai');
-const dotenv = require('dotenv');
 
-dotenv.config({ path: __dirname + '/../.env' });
+const { GoogleGenAI } = require("@google/genai");
+const dotenv = require("dotenv");
+const path = require("path");
 
-if (!process.env.AI_API_KEY) {
-    console.error("CRITICAL ERROR: AI_API_KEY is missing from environment variables.");
-} else {
-    console.log("AI_API_KEY loaded successfully. Starts with:", process.env.AI_API_KEY.substring(0, 7) + "...");
+dotenv.config({ path: path.join(__dirname, "../.env") });
+
+const apiKey = process.env.AI_API_KEY;
+
+if (!apiKey) {
+    console.error("AI_API_KEY is missing from server/.env");
 }
 
-const openai = new OpenAI({
-    apiKey: process.env.AI_API_KEY,
-});
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+
+const SYSTEM_INSTRUCTION = `
+You are the AI Tutor for AI Campus Companion, a college student
+management app. Explain academic concepts clearly and patiently.
+Use examples when helpful. Break complex topics into manageable steps.
+Do not claim to know the student's real-time schedule, notes, or grades
+unless that information is explicitly provided in the conversation.
+`;
 
 const generateAIResponse = async (req, res) => {
     try {
-        const { messages, message } = req.body;
-
-        let conversation = [];
-
-        // Build context from history if provided (limit last 5 messages)
-        if (messages && Array.isArray(messages)) {
-            // Map frontend messages to OpenAI format
-            conversation = messages
-                .slice(-5) // Keep context manageable
-                .map(msg => ({
-                    role: msg.sender === 'user' ? 'user' : 'assistant',
-                    content: msg.text
-                }));
+        if (!ai) {
+            return res.status(500).json({
+                message: "AI Tutor is not configured. Please check the server configuration."
+            });
         }
 
-        // Add the new user message if "message" field is sent separately
-        if (message) {
-            conversation.push({ role: 'user', content: message });
+        const { messages, message } = req.body || {};
+        const conversation = [];
+
+        if (Array.isArray(messages)) {
+            messages.slice(-10).forEach((msg) => {
+                if (typeof msg.text !== "string" || !msg.text.trim()) {
+                    return;
+                }
+
+                conversation.push({
+                    role: msg.sender === "user" ? "user" : "model",
+                    parts: [{ text: msg.text.trim() }]
+                });
+            });
         }
 
-        // System prompt context
-        conversation.unshift({
-            role: "system",
-            content: "You are an AI Tutor for a college student management app called 'AI Campus Companion'. Help the student with their studies, explain concepts clearly, and provide academic guidance. If asked about their schedule or notes, remind them you don't have access to their real-time data yet but can help explain general topics."
+        // Avoid adding the latest question twice if it is already in history.
+        if (typeof message === "string" && message.trim()) {
+            const lastMessage = conversation[conversation.length - 1];
+            if (
+                !lastMessage ||
+                lastMessage.role !== "user" ||
+                lastMessage.parts[0].text !== message.trim()
+            ) {
+                conversation.push({
+                    role: "user",
+                    parts: [{ text: message.trim() }]
+                });
+            }
+        }
+
+        if (conversation.length === 0) {
+            return res.status(400).json({
+                message: "Please enter a question for the AI Tutor."
+            });
+        }
+
+        const response = await ai.models.generateContent({
+            model: "gemini-3.8-flash",
+            contents: conversation,
+            config: {
+                systemInstruction: SYSTEM_INSTRUCTION,
+                maxOutputTokens: 500
+            }
         });
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: conversation,
-            max_tokens: 500,
-        });
+        const reply = response.text;
 
-        const reply = completion.choices[0].message.content;
+        if (!reply) {
+            return res.status(502).json({
+                message: "The AI Tutor returned an empty response. Please try again."
+            });
+        }
 
-        res.status(200).json({ reply });
+        return res.status(200).json({ reply });
     } catch (error) {
-        console.error('AI API Error:', error);
-        res.status(500).json({
-            message: 'Failed to fetch AI response',
-            error: error.message
+        // Never log API keys or environment variables.
+        console.error("AI Tutor request failed:", error.message);
+
+        return res.status(500).json({
+            message: "Failed to fetch an AI Tutor response. Please try again."
         });
     }
 };

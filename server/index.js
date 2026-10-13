@@ -4,6 +4,9 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const noteRoutes = require('./routes/noteRoutes');
+const timetableRoutes = require('./routes/timetableRoutes');
+
 
 const path = require('path');
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -24,6 +27,8 @@ const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/notes', noteRoutes);
+app.use('/api/timetable', timetableRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');
